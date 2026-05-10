@@ -1,6 +1,3 @@
-"""
-Tương ứng SparkStreamConsoleWriter.java — ghi ra console để debug nhanh.
-"""
 import logging
 
 from pyspark.sql import DataFrame
@@ -16,7 +13,6 @@ logger = logging.getLogger(__name__)
 
 
 class SparkStreamConsole(BaseSparkKafkaStream):
-    """Job streaming → ghi ra console (debug)."""
 
     def execute(self, processed_df: DataFrame) -> None:
         sql = ConfigLoader.get_sql_config()
@@ -28,7 +24,6 @@ class SparkStreamConsole(BaseSparkKafkaStream):
                 logger.info(f"[batch={batch_id}] Empty, skip.")
                 return
 
-            # Apply SQL nếu có
             if sql.output.sql_conditions and sql.output.sql_conditions.strip():
                 batch_df.createOrReplaceTempView(temp_view)
                 result = self.spark.sql(sql.output.sql_conditions)
@@ -48,11 +43,10 @@ class SparkStreamConsole(BaseSparkKafkaStream):
             .start()
         )
 
-        logger.info(f"✅ Console streaming started: id={query.id}")
+        logger.info(f"Console streaming started: id={query.id}")
         query.awaitTermination()
 
 
-# =========================================================
 def main() -> None:
     cli = CommandLineReader()
     try:

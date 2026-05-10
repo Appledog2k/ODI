@@ -68,18 +68,17 @@ class SparkSessionWrapper(ABC):
 
         self.spark = builder.getOrCreate()
         self.spark.sparkContext.setLogLevel("WARN")
-        logger.info(f"✅ SparkSession initialized: app={self.app_name}, warehouse={warehouse}")
+        logger.info(f"SparkSession initialized: app={self.app_name}, warehouse={warehouse}")
 
     @abstractmethod
     def init(self, sc) -> None:
-        """Subclass override để định nghĩa logic khởi tạo nghiệp vụ."""
         ...
 
     def close(self) -> None:
         if self.spark is not None:
             try:
                 self.spark.stop()
-                logger.info("🛑 SparkSession stopped")
+                logger.info("SparkSession stopped")
             except Exception as e:  # noqa
                 logger.warning(f"Error stopping SparkSession: {e}")
 

@@ -10,12 +10,12 @@ logger = logging.getLogger(__name__)
 class BaseApplication(SparkSessionWrapper):
     def start(self) -> None:
         try:
-            logger.info(f"▶️  Starting application: {self.app_name}")
+            logger.info(f"Starting application: {self.app_name}")
             self.init(self.spark.sparkContext)
         except SystemExit:
             raise
         except KeyboardInterrupt:
-            logger.warning("⚠️ Interrupted by user")
+            logger.warning("Interrupted by user")
         except Exception as e:  # noqa
             handle_fatal_error(f"Application {self.app_name} failed", e)
         finally:

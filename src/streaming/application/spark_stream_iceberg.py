@@ -75,7 +75,6 @@ class SparkStreamIceberg(BaseSparkKafkaStream):
 def main() -> None:
     cli = CommandLineReader()
 
-    # 1) Load config
     try:
         ConfigLoader.initialize(
             config_file_path=cli.get_file_config_path(),
@@ -85,15 +84,12 @@ def main() -> None:
     except Exception as e:
         handle_fatal_error("Failed to load config", e)
 
-    # 2) Setup logging với job name từ config
     sql = ConfigLoader.get_sql_config()
     setup_logging(job_name=sql.job.name)
 
-    # 3) Khởi tạo và start app
     app_name = f"streaming-{sql.job.name}"
     app = SparkStreamIceberg(app_name=app_name)
     app.start()
-
 
 if __name__ == "__main__":
     main()

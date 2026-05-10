@@ -3,8 +3,8 @@ from abc import abstractmethod
 
 from pyspark.sql import DataFrame
 
-from streaming.base.spark.base_application import BaseApplication
 from streaming.base.kafka.kafka_services import KafkaServices
+from streaming.base.spark.base_application import BaseApplication
 from streaming.connector.iceberg_connector import IcebergConnector
 from streaming.utils.model.config_loader import ConfigLoader
 
@@ -12,39 +12,28 @@ logger = logging.getLogger(__name__)
 
 
 class BaseSparkKafkaStream(BaseApplication):
-    """
-    Base streaming app:
-      1) init(sc) → tạo IcebergConnector, đọc Kafka, processKafkaData → execute()
-      2) Subclass override execute(processed_df) để định nghĩa write logic.
-    """
-
     def __init__(self, app_name: str):
         super().__init__(app_name)
         self.iceberg_connector: IcebergConnector = None
         self.raw_kafka_df: DataFrame = None
         self.processed_df: DataFrame = None
 
-    # =========================================================
     def init(self, sc) -> None:
         sql = ConfigLoader.get_sql_config()
-        logger.info(f"⚙️  Init streaming job: {sql.job.name}")
+        logger.info(f"Init streaming job: {sql.job.name}")
 
-        # 1) Connector ghi Iceberg
         self.iceberg_connector = IcebergConnector(self.spark)
 
-        # 2) Đọc Kafka stream
         self.raw_kafka_df = KafkaServices.create_session_connect_kafka(self.spark)
 
-        # 3) Pre-process (parse JSON nếu có schema, giữ raw nếu không)
         self.processed_df = KafkaServices.process_kafka_data(self.raw_kafka_df)
         logger.info(
-            f"✅ Kafka stream processed. Schema columns: {self.processed_df.columns}"
+            f"Kafka stream processed. Schema columns: {self.processed_df.columns}"
         )
 
         # 4) Gọi business logic ở subclass
         self.execute(self.processed_df)
 
-    # =========================================================
     @abstractmethod
     def execute(self, processed_df: DataFrame) -> None:
         """Subclass implement: định nghĩa cách ghi dữ liệu (Iceberg/Console/...)."""

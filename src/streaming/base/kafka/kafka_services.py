@@ -1,6 +1,3 @@
-"""
-Tương ứng KafkaServices.java — service layer cho Kafka source.
-"""
 import logging
 from typing import Dict
 
@@ -51,7 +48,7 @@ class KafkaServices:
 
         df = spark.readStream.format(SC.KAFKA).options(**options).load()
         logger.info(
-            f"✅ Kafka stream created: topic={k_job.topics_in}, "
+            f"Kafka stream created: topic={k_job.topics_in}, "
             f"offsets={k_job.auto_offset_reset}, "
             f"maxOffsets/trigger={k_job.max_offsets_per_trigger}"
         )
