@@ -1,0 +1,20 @@
+job:
+  name: fetch_systemname_oltptype_nametable
+
+spark:
+  shuffle_partitions: 6
+  default_parallelism: 6
+  trigger_interval: "1 seconds"
+  min_batches_to_retain: 5
+  no_data_progress_event_interval: 100000
+
+kafka:
+  topics_in: fetch_systemname_oltptype_nametable # tên temp table spark nếu có
+  auto_offset_reset: latest # earliest | latest
+  max_offsets_per_trigger: 1000 # mỗi executer sẽ đọc 1000/partition mỗi lần trigger, executor = partitions
+
+output:
+  sql_conditions: >
+    select *
+    from fetch_systemname_oltptype_nametable
+    where 1=1

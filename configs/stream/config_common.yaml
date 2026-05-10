@@ -1,0 +1,23 @@
+lakehouse:
+  ceph:
+    ceph_endpoint: ${CEPH_ENDPOINT}
+    ceph_access_key: ${CEPH_ACCESS_KEY}
+    ceph_secret_key: ${CEPH_SECRET_KEY}
+    region: ${CEPH_REGION}
+    ssl_enabled: ${CEPH_SSL_ENABLED}
+    path_style_access: true #Required for Ceph RGW
+  iceberg:
+    write.format.default: parquet
+    write.parquet.compression-codec: zstd
+    write.target-file-size-bytes: "134217728" # 128MB
+    write.distribution-mode: hash
+    write.metadata.delete-after-commit.enabled: "true"
+    write.metadata.previous-versions-max: "20"
+    format-version: "2"
+kafka:
+  bootstrap_servers: ${KAFKA_BOOTSTRAP_SERVERS}
+  security_protocol: "SASL_PLAINTEXT"
+  sasl_mechanism: "SCRAM-SHA-256"
+  user: ${KAFKA_USER}
+  password: ${KAFKA_PASSWORD}
+  secure: true
