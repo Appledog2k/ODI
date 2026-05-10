@@ -16,9 +16,9 @@ class ExceptionHandler:
         exit_code: int = 1,
     ) -> None:
         if exception is not None:
-            logger.error(f"💥 FATAL: {error_message}", exc_info=exception)
+            logger.error(f"FATAL: {error_message}", exc_info=exception)
         else:
-            logger.error(f"💥 FATAL: {error_message}")
+            logger.error(f"FATAL: {error_message}")
         sys.exit(exit_code)
 
 
@@ -27,5 +27,4 @@ def handle_fatal_error(
     exception: Optional[BaseException] = None,
     exit_code: int = 1,
 ) -> None:
-    """Shortcut function tiện dùng."""
     ExceptionHandler.handle_fatal_error(error_message, exception, exit_code)
