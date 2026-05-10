@@ -1,6 +1,3 @@
-"""
-Tương ứng CommandLineReader.java — parse --config-file, --sql-file.
-"""
 import argparse
 from typing import List, Optional
 
