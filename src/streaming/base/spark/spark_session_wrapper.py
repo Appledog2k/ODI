@@ -17,7 +17,6 @@ class SparkSessionWrapper(ABC):
         self.spark: Optional[SparkSession] = None
         self._init_spark_session()
 
-    # =========================================================
     def _init_spark_session(self) -> None:
         common = ConfigLoader.get_common_config()
         sql = ConfigLoader.get_sql_config()
@@ -60,14 +59,13 @@ class SparkSessionWrapper(ABC):
         )
 
         for key, value in ice.raw.items():
-            # Set ở cấp catalog default → áp dụng cho mọi table mới
             builder = builder.config(
                 f"spark.sql.catalog.{catalog}.table-default.{key}",
                 str(value),
             )
 
         self.spark = builder.getOrCreate()
-        self.spark.sparkContext.setLogLevel("WARN")
+        self.spark.sparkContext.setLogLevel("INFO")
         logger.info(f"SparkSession initialized: app={self.app_name}, warehouse={warehouse}")
 
     @abstractmethod
@@ -80,7 +78,7 @@ class SparkSessionWrapper(ABC):
                 self.spark.stop()
                 logger.info("SparkSession stopped")
             except Exception as e:  # noqa
-                logger.warning(f"Error stopping SparkSession: {e}")
+                logger.error(f"Error stopping SparkSession: {e}")
 
     def __enter__(self):
         return self

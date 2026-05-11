@@ -17,7 +17,6 @@ class KafkaServices:
     def __init__(self):
         raise NotImplementedError("Utility class")
 
-    # =========================================================
     @staticmethod
     def create_session_connect_kafka(spark: SparkSession) -> DataFrame:
         common = ConfigLoader.get_common_config()

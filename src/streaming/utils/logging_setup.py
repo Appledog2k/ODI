@@ -9,8 +9,6 @@ from typing import Optional
 
 
 class JsonFormatter(logging.Formatter):
-    """Format log dạng JSON 1 dòng cho dễ parse ở ELK/Loki."""
-
     def format(self, record: logging.LogRecord) -> str:
         payload = {
             "ts": datetime.utcfromtimestamp(record.created).isoformat() + "Z",
@@ -25,7 +23,6 @@ class JsonFormatter(logging.Formatter):
         }
         if record.exc_info:
             payload["exception"] = self.formatException(record.exc_info)
-        # Extra fields (vd: ctx_batch_id, ctx_rows_count, ...)
         for k, v in record.__dict__.items():
             if k.startswith("ctx_"):
                 payload[k[4:]] = v
@@ -104,5 +101,5 @@ def setup_logging(
 
     logging.config.dictConfig(config)
     logger = logging.getLogger("streaming")
-    logger.info(f"✅ Logging initialized for job={job_name}, level={log_level}, dir={log_dir}")
+    logger.info(f"Logging initialized for job={job_name}, level={log_level}, dir={log_dir}")
     return logger

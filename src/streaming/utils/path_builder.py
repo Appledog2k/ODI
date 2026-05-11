@@ -14,9 +14,7 @@ class PathBuilder:
         if sql.output.checkpoint_location:
             return sql.output.checkpoint_location
 
-        bucket = common.ceph.warehouse_bucket
-        job_name = sql.job.name
-        return f"s3a://{bucket}/checkpoints/{job_name}/{stream_name}"
+        return f"s3a://{common.ceph.warehouse_bucket}/checkpoints/{sql.job.name}/{stream_name}"
 
     @staticmethod
     def build_iceberg_table(target: str = "", default_namespace: str = "bronze") -> str:

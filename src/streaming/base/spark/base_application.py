@@ -15,7 +15,7 @@ class BaseApplication(SparkSessionWrapper):
         except SystemExit:
             raise
         except KeyboardInterrupt:
-            logger.warning("Interrupted by user")
+            logger.error("Interrupted by user")
         except Exception as e:  # noqa
             handle_fatal_error(f"Application {self.app_name} failed", e)
         finally:

@@ -31,10 +31,8 @@ class BaseSparkKafkaStream(BaseApplication):
             f"Kafka stream processed. Schema columns: {self.processed_df.columns}"
         )
 
-        # 4) Gọi business logic ở subclass
         self.execute(self.processed_df)
 
     @abstractmethod
     def execute(self, processed_df: DataFrame) -> None:
-        """Subclass implement: định nghĩa cách ghi dữ liệu (Iceberg/Console/...)."""
         ...

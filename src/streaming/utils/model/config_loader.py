@@ -44,7 +44,6 @@ def _read_yaml(path: str) -> Dict[str, Any]:
 
 
 class ConfigLoader:
-    """Singleton — gọi initialize() ở entrypoint trước khi dùng."""
     _common_config: Optional[CommonConfig] = None
     _sql_config: Optional[SqlConfig] = None
     _initialized: bool = False
@@ -54,23 +53,23 @@ class ConfigLoader:
         cls,
         config_file_path: str,
         sql_file_path: str,
-        prefix_phone_file_path: Optional[str] = None,  # giữ tham số tương thích, không bắt buộc
+        prefix_phone_file_path: Optional[str] = None,  # giữ tham số tương thích
     ) -> None:
         if cls._initialized:
-            logger.warning("ConfigLoader đã được initialize, skip.")
+            logger.info("ConfigLoader đã được initialize, skip.")
             return
 
-        logger.info(f"📂 Loading common config: {config_file_path}")
+        logger.info(f"Loading common config: {config_file_path}")
         common_raw = _read_yaml(config_file_path)
         cls._common_config = CommonConfig.from_dict(common_raw)
 
-        logger.info(f"📂 Loading SQL config: {sql_file_path}")
+        logger.info(f"Loading SQL config: {sql_file_path}")
         sql_raw = _read_yaml(sql_file_path)
         cls._sql_config = SqlConfig.from_dict(sql_raw)
 
         cls._initialized = True
         logger.info(
-            f"✅ ConfigLoader initialized — job={cls._sql_config.job.name}, "
+            f"ConfigLoader initialized — job={cls._sql_config.job.name}, "
             f"topic={cls._sql_config.kafka.topics_in}"
         )
 
@@ -91,7 +90,6 @@ class ConfigLoader:
 
     @classmethod
     def reset(cls) -> None:
-        """Chỉ dùng cho unit test."""
         cls._common_config = None
         cls._sql_config = None
         cls._initialized = False
@@ -99,7 +97,4 @@ class ConfigLoader:
     @classmethod
     def _ensure(cls) -> None:
         if not cls._initialized:
-            raise RuntimeError(
-                "ConfigLoader chưa được initialize(). "
-                "Hãy gọi ConfigLoader.initialize(config_file_path, sql_file_path) ở entrypoint."
-            )
+            raise RuntimeError("ConfigLoader chưa được initialize().")
