@@ -1,14 +1,3 @@
-"""
-Tương ứng SparkStreamKafka.java — entrypoint cho job ghi Iceberg.
-
-Submit:
-  spark-submit --master yarn --deploy-mode cluster \
-    --files configs/common.yaml,configs/jobs/<job>.yaml \
-    --py-files src.zip \
-    src/streaming/application/spark_stream_iceberg.py \
-    --config-file common.yaml \
-    --sql-file <job>.yaml
-"""
 import logging
 
 from pyspark.sql import DataFrame

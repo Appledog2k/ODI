@@ -48,7 +48,8 @@ class StringConstants:
     SASL_MECHANISM = "kafka.sasl.mechanism"
     KAFKA_SASL_JAAS_CONFIG = "kafka.sasl.jaas.config"
 
-    ICEBERG_CATALOG = "lakehouse"
+    # Iceberg Config
+    ICEBERG_CATALOG = "bronze"
     ICEBERG_FORMAT = "iceberg"
     ICEBERG_EXTENSIONS = "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions"
     ICEBERG_SPARK_CATALOG = "org.apache.iceberg.spark.SparkCatalog"

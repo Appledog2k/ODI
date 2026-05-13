@@ -30,22 +30,30 @@ class SparkSessionWrapper(ABC):
         builder = (
             SparkSession.builder
             .appName(self.app_name)
+            # java options
+            .config("spark.driver.extraJavaOptions", "-Djava.io.tmpdir=/opt/data_temp_hadoop")
+            .config("spark.executor.extraJavaOptions", "-Djava.io.tmpdir=/opt/data_temp_hadoop -XX:+ExitOnOutofMemoryError")
+            # catalog config
             .config("spark.sql.extensions", SC.ICEBERG_EXTENSIONS)
             .config(f"spark.sql.catalog.{catalog}", SC.ICEBERG_SPARK_CATALOG)
-            .config(f"spark.sql.catalog.{catalog}.type", "hadoop")
-            .config(f"spark.sql.catalog.{catalog}.warehouse", warehouse)
-            .config(f"spark.sql.catalog.{catalog}.io-impl", SC.ICEBERG_S3_FILE_IO)
-            .config(SC.SPARK_HADOOP_FS_S3A_IMPL, SC.HADOOP_FS_S3A_FILE_SYSTEM)
+            .config(f"spark.sql.catalog.{catalog}.type", "hive")
+            .config(f"spark.sql.catalog.{catalog}.uri", "thrift://10.64.1.144:9083")
+            .config(f"spark.sql.catalog.{catalog}.warehouse", "s3a://mcpolap/bronze/") # check lại phần build path
+            .config("spark.sql.defaultCatalog", catalog)
+            # cephs3
             .config(SC.S3A_ENDPOINT, ceph.ceph_endpoint)
             .config(SC.ACCESS_KEY, ceph.ceph_access_key)
             .config(SC.SECRET_KEY, ceph.ceph_secret_key)
-            .config(SC.S3A_PATH_STYLE_ACCESS, str(ceph.path_style_access).lower())
-            .config(SC.S3A_CONNECTION_SSL_ENABLED, str(ceph.ssl_enabled).lower())
+            .config(SC.S3A_PATH_STYLE_ACCESS, SC.TRUE)
+            .config(SC.S3A_CONNECTION_SSL_ENABLED, SC.FALSE)
             .config(SC.S3A_AWS_CREDENTIALS_PROVIDER, SC.S3A_SIMPLE_AWS)
             .config(SC.S3A_IMPL_DISABLE_CACHE, SC.TRUE)
-            .config(SC.S3A_ATTEMPTS_MAXIMUM, ceph.s3a_attempts_max)
-            .config(SC.S3A_CONNECTION_TIMEOUT, ceph.s3a_connection_timeout)
+            .config(SC.S3A_CONNECTION_TIMEOUT, "200000")
             .config(SC.S3A_CONNECTION_ESTABLISH_TIMEOUT, "5000")
+            .config("spark.hadoop.fs.s3a.proxy.host", None)
+            .config("spark.hadoop.fs.s3a.proxy.port", 0)
+            .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
+            # tunning stream
             .config(SC.SPARK_SQL_SHUFFLE_PARTITIONS, str(spark_tuning.shuffle_partitions))
             .config(SC.SPARK_DEFAULT_PARALLELISM, str(spark_tuning.default_parallelism))
             .config(SC.MIN_BATCHES_TO_RETAIN, str(spark_tuning.min_batches_to_retain))
@@ -56,17 +64,35 @@ class SparkSessionWrapper(ABC):
             .config(SC.SPARK_STREAMING_STOP_GRACE_FULLY_ON_SHUTDOWN, SC.TRUE)
             .config(SC.CLEANER_CHECKPOINTS, SC.TRUE)
             .config(SC.MAX_TO_STRING_FIELDS, "500")
+            .config("spark.hadoop.fs.s3a.connection.maximum", "100")
+            .config("spark.hadoop.fs.s3a.attempts.maximum", "10")
+            .config("spark.hadoop.fs.s3a.retry.limit", "10")
+            .config("spark.hadoop.fs.s3a.retry.interval", "500ms")
+            # tunning upload
+            .config("spark.hadoop.fs.s3a.fast.upload", "true") # fast upload
+            .config("spark.hadoop.fs.s3a.fast.upload.buffer", "bytebuffer")  # ram buffer
+            .config("spark.hadoop.fs.s3a.fast.upload.active.blocks", "4") # số block song song
+            .config("spark.hadoop.fs.s3a.multipart.size", "32M") # kích thước part
+            .config("spark.hadoop.fs.s3a.multipart.threshold", "32M")
+            .config("spark.hadoop.fs.s3a.threads.max", "20")
+            .config("spark.hadoop.fs.s3a.threads.keepalivetime", "60")
+            .config("spark.hadoop.fs.s3a.max.total.tasks", "20")
+            # iceberg tunning
+            .config("spark.sql.catalog.bronze.commit.retry.num-retries", "10")
+            .config("spark.sql.catalog.bronze.commit.retry.min-wait-ms", "100")
+            .config("spark.sql.catalog.bronze.commit.retry.max-wait-ms", "60000")
+            .config("spark.sql.catalog.bronze.commit.retry.total-timeout-ms", "1800000")
+            .config("spark.sql.catalog.bronze.write.target-file-size-bytes", "134217728")  # 128MB
+            .config("spark.sql.catalog.bronze.write.distribution-mode", "hash")
+            .config("spark.sql.catalog.bronze.write.fanout.enabled", SC.TRUE)
+            # tunning spark
+            .config("spark.local.dir", "/opt/data_temp_hadoop")
+            .config("spark.shuffe.service.enabled", SC.TRUE)
         )
 
-        for key, value in ice.raw.items():
-            builder = builder.config(
-                f"spark.sql.catalog.{catalog}.table-default.{key}",
-                str(value),
-            )
-
-        self.spark = builder.getOrCreate()
+        self.spark = builder.enableHiveSupport().getOrCreate()
         self.spark.sparkContext.setLogLevel("INFO")
-        logger.info(f"SparkSession initialized: app={self.app_name}, warehouse={warehouse}")
+        logger.info(f"SparkSession initialized: app={self.app_name}")
 
     @abstractmethod
     def init(self, sc) -> None:
