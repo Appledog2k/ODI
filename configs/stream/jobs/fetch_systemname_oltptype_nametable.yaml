@@ -1,18 +1,36 @@
 job:
   name: fetch_systemname_oltptype_nametable
-
 spark:
   shuffle_partitions: 6
   default_parallelism: 6
   trigger_interval: "1 seconds"
   min_batches_to_retain: 5
   no_data_progress_event_interval: 100000
-
 kafka:
-  topics_in: fetch_systemname_oltptype_nametable # tên temp table spark nếu có
+  topics_in: fetch_systemname_oltptype_nametable
   auto_offset_reset: latest # earliest | latest
   max_offsets_per_trigger: 1000 # mỗi executer sẽ đọc 1000/partition mỗi lần trigger, executor = partitions
-
+  data_format: json # json | avro
+  schema_cdc:
+    fields:
+      - name: before # state of row before the change
+        type: struct
+      - name : after # state of row after the change
+        type: struct
+      - name: source # metadata about the source of the change event
+        type: struct
+      - name: op # operation type: c (create), u (update), d (delete), t (truncate)
+        type: string
+      - name: ts_ms # timestamp of the change event in milliseconds
+        type: long
+  schema_data:
+    fields:
+      - name: systemname
+        type: string
+      - name: oltptype
+        type: string
+      - name: nametable
+        type: string
 output:
   sql_conditions: >
     select *

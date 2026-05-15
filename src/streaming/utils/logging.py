@@ -1,11 +1,11 @@
 import json
-import logging
 import logging.config
 import os
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+
+import logging
 
 
 class JsonFormatter(logging.Formatter):
@@ -30,10 +30,10 @@ class JsonFormatter(logging.Formatter):
 
 
 def setup_logging(
-    job_name: str,
-    log_level: str = None,
-    log_dir: str = None,
-    enable_json: bool = True,
+        job_name: str,
+        log_level: str = None,
+        log_dir: str = None,
+        enable_json: bool = True,
 ) -> logging.Logger:
     """
     Khởi tạo logging cho ứng dụng.

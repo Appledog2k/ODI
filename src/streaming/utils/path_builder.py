@@ -1,5 +1,5 @@
 from streaming.utils.model.config_loader import ConfigLoader
-from streaming.utils.string_constants import StringConstants as SC
+from streaming.utils.string_constants import StringConstants as sc
 
 
 class PathBuilder:
@@ -11,10 +11,7 @@ class PathBuilder:
         common = ConfigLoader.get_common_config()
         sql = ConfigLoader.get_sql_config()
 
-        if sql.output.checkpoint_location:
-            return sql.output.checkpoint_location
-
-        return f"s3a://{common.ceph.lakehouse_catalog}/checkpoints/{sql.job.name}/{stream_name}"
+        return f"s3a://{common.ceph.bucket_checkpoints}/checkpoints/{sql.job.name}/{stream_name}"
 
     @staticmethod
     def build_iceberg_table(target: str = "", default_namespace: str = "bronze") -> str:
@@ -25,11 +22,11 @@ class PathBuilder:
         if len(parts) == 3:
             return target
         if len(parts) == 2:
-            return f"{SC.ICEBERG_CATALOG}.{target}"
-        return f"{SC.ICEBERG_CATALOG}.{default_namespace}.{target}"
+            return f"{sc.ICEBERG_CATALOG}.{target}"
+        return f"{sc.ICEBERG_CATALOG}.{default_namespace}.{target}"
 
     @staticmethod
     def build_lakehouse_path() -> str:
         """Path warehouse cho Iceberg catalog."""
         common = ConfigLoader.get_common_config()
-        return f"s3a://{common.ceph.lakehouse_catalog}/warehouse"
+        return f"s3a://{common.ceph.bucket_lakehouse}/warehouse"

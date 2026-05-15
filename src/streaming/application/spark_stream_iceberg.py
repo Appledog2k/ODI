@@ -68,7 +68,7 @@ def main() -> None:
         ConfigLoader.initialize(
             config_file_path=cli.get_file_config_path(),
             sql_file_path=cli.get_file_sql_path(),
-            prefix_phone_file_path=cli.get_file_prefix_phone_path(),
+            properties_file_path=cli.get_properties_file_path()
         )
     except Exception as e:
         handle_fatal_error("Failed to load config", e)

@@ -1,11 +1,11 @@
 import logging
 
 from pyspark.sql import DataFrame
+from streaming.utils.logging import setup_logging
 
 from streaming.base.spark.base_spark_kafka_stream import BaseSparkKafkaStream
 from streaming.utils.command_line_reader import CommandLineReader
 from streaming.utils.exception_handler import handle_fatal_error
-from streaming.utils.logging_setup import setup_logging
 from streaming.utils.model.config_loader import ConfigLoader
 from streaming.utils.path_builder import PathBuilder
 
@@ -52,7 +52,8 @@ def main() -> None:
     try:
         ConfigLoader.initialize(
             config_file_path=cli.get_file_config_path(),
-            sql_file_path=cli.get_file_sql_path()
+            sql_file_path=cli.get_file_sql_path(),
+            properties_file_path=cli.get_properties_file_path()
         )
     except Exception as e:
         handle_fatal_error("Failed to load config", e)

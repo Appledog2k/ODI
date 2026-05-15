@@ -17,11 +17,11 @@ class CommandLineReader:
             required=True,
             help="Path tới SQL/job config YAML",
         )
-        parse.add_argument(
+        parser.add_argument(
             "--properties-file",
             required=False,
             default=None,
-            help=""
+            help="Path tới application.properties file"
         )
         self._ns = parser.parse_args(args)
 
@@ -32,4 +32,4 @@ class CommandLineReader:
         return self._ns.sql_file
     
     def get_properties_file_path(self) -> Optional[str]:
-        return self._ns.properties_files
+        return self._ns.properties_file

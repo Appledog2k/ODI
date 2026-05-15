@@ -5,7 +5,7 @@ from pyspark.sql import DataFrame
 
 from streaming.base.kafka.kafka_services import KafkaServices
 from streaming.base.spark.base_application import BaseApplication
-from streaming.connector.iceberg_connector import IcebergConnector
+from streaming.connector.iceberg.iceberg_connector import IcebergConnector
 from streaming.utils.model.config_loader import ConfigLoader
 
 logger = logging.getLogger(__name__)

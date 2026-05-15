@@ -5,7 +5,10 @@ lakehouse:
     ceph_secret_key: ${CEPH_SECRET_KEY}
     ssl_enabled: false
     path_style_access: true #Required for Ceph RGW
-    lakehouse_catalog: mcpolap
+    s3a_attempts_max: 3,
+    s3a_connection_timeout: 300000
+    bucket_checkpoints: ${CEPH_BUCKET_CHECKPOINTS},
+    bucket_lakehouse: ${CEPH_BUCKET_LAKEHOUSE}
   hive_metastore:
     hive_uri: ${HIVE_URI}
   iceberg:
@@ -18,8 +21,8 @@ lakehouse:
     format-version: "2"
 kafka:
   bootstrap_servers: ${KAFKA_BOOTSTRAP_SERVERS}
-  security_protocol: "SASL_PLAINTEXT"
-  sasl_mechanism: "SCRAM-SHA-256"
   user: ${KAFKA_USER}
   password: ${KAFKA_PASSWORD}
+  security_protocol: "SASL_PLAINTEXT"
+  sasl_mechanism: "SCRAM-SHA-256"
   secure: false
