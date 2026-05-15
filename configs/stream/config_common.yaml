@@ -3,9 +3,11 @@ lakehouse:
     ceph_endpoint: ${CEPH_ENDPOINT}
     ceph_access_key: ${CEPH_ACCESS_KEY}
     ceph_secret_key: ${CEPH_SECRET_KEY}
-    region: ${CEPH_REGION}
-    ssl_enabled: ${CEPH_SSL_ENABLED}
+    ssl_enabled: false
     path_style_access: true #Required for Ceph RGW
+    lakehouse_catalog: mcpolap
+  hive_metastore:
+    hive_uri: ${HIVE_URI}
   iceberg:
     write.format.default: parquet
     write.parquet.compression-codec: zstd
@@ -20,4 +22,4 @@ kafka:
   sasl_mechanism: "SCRAM-SHA-256"
   user: ${KAFKA_USER}
   password: ${KAFKA_PASSWORD}
-  secure: true
+  secure: false

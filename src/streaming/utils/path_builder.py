@@ -14,7 +14,7 @@ class PathBuilder:
         if sql.output.checkpoint_location:
             return sql.output.checkpoint_location
 
-        return f"s3a://{common.ceph.warehouse_bucket}/checkpoints/{sql.job.name}/{stream_name}"
+        return f"s3a://{common.ceph.lakehouse_catalog}/checkpoints/{sql.job.name}/{stream_name}"
 
     @staticmethod
     def build_iceberg_table(target: str = "", default_namespace: str = "bronze") -> str:
@@ -29,7 +29,7 @@ class PathBuilder:
         return f"{SC.ICEBERG_CATALOG}.{default_namespace}.{target}"
 
     @staticmethod
-    def build_warehouse_path() -> str:
+    def build_lakehouse_path() -> str:
         """Path warehouse cho Iceberg catalog."""
         common = ConfigLoader.get_common_config()
-        return f"s3a://{common.ceph.warehouse_bucket}/warehouse"
+        return f"s3a://{common.ceph.lakehouse_catalog}/warehouse"
