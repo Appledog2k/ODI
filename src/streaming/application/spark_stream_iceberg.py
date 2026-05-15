@@ -14,9 +14,24 @@ logger = logging.getLogger(__name__)
 
 
 class SparkStreamIceberg(BaseSparkKafkaStream):
-    """Job streaming Kafka → Iceberg."""
+    """
+    Streaming job: Kafka → Parse dữ liệu → Apply SQL → Iceberg.
+
+    Pipeline:
+    1. Read từ Kafka topic (topic_in)
+    2. Parse dữ liệu theo schema_data từ config (by BaseSparkKafkaStream)
+    3. Apply SQL condition nếu có (output.sql_conditions)
+    4. Select columns nếu cần (output.columns)
+    5. Write đến Iceberg table (target_table)
+    """
 
     def execute(self, processed_df: DataFrame) -> None:
+        """
+        Execute Iceberg streaming pipeline.
+
+        Args:
+            processed_df: DataFrame đã được parse từ Kafka (schema từ schema_data)
+        """
         sql = ConfigLoader.get_sql_config()
         out = sql.output
         temp_view = sql.kafka.temp_view or sql.job.name
@@ -29,6 +44,7 @@ class SparkStreamIceberg(BaseSparkKafkaStream):
 
         logger.info(
             f"📌 Job config:\n"
+            f"  - Input topic  : {sql.kafka.topics_in}\n"
             f"  - target_table : {target_table}\n"
             f"  - checkpoint   : {checkpoint}\n"
             f"  - temp_view    : {temp_view}\n"
@@ -38,6 +54,14 @@ class SparkStreamIceberg(BaseSparkKafkaStream):
         )
 
         def _process_batch(batch_df: DataFrame, batch_id: int) -> None:
+            """Process mỗi batch từ Kafka stream."""
+            if batch_df.rdd.isEmpty():
+                logger.info(f"[batch={batch_id}] Empty batch, skip.")
+                return
+
+            logger.info(f"[batch={batch_id}] Processing {batch_df.count()} rows from Kafka")
+
+            # Gọi iceberg connector để transform + write
             self.iceberg_connector.transform_and_write_batch(
                 batch_df=batch_df,
                 batch_id=batch_id,
@@ -48,6 +72,7 @@ class SparkStreamIceberg(BaseSparkKafkaStream):
                 write_mode=out.write_mode,
             )
 
+        # Start streaming query
         query = (
             processed_df.writeStream
             .foreachBatch(_process_batch)
@@ -57,7 +82,14 @@ class SparkStreamIceberg(BaseSparkKafkaStream):
             .start()
         )
 
-        logger.info(f"✅ Streaming query started: id={query.id}, runId={query.runId}")
+        logger.info(
+            f"✅ Iceberg streaming started\n"
+            f"  - Query ID: {query.id}\n"
+            f"  - Run ID: {query.runId}\n"
+            f"  - Target table: {target_table}"
+        )
+
+        # Wait for termination
         query.awaitTermination()
 
 

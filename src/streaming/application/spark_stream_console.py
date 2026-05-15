@@ -13,27 +13,45 @@ logger = logging.getLogger(__name__)
 
 
 class SparkStreamConsole(BaseSparkKafkaStream):
+    """
+    Console streaming: Read từ Kafka → Parse dữ liệu → Display tới console.
+    Dữ liệu được parse theo schema_data từ config.
+    """
 
     def execute(self, processed_df: DataFrame) -> None:
+        """
+        Execute streaming pipeline.
+
+        Args:
+            processed_df: DataFrame đã được parse từ Kafka messages
+                         (chứa các column từ schema_data)
+        """
         sql = ConfigLoader.get_sql_config()
         temp_view = sql.kafka.temp_view or sql.job.name
         checkpoint = PathBuilder.build_checkpoint_path("console")
 
         def _process_batch(batch_df: DataFrame, batch_id: int) -> None:
+            """Process mỗi batch của Kafka stream."""
             if batch_df.rdd.isEmpty():
                 logger.info(f"[batch={batch_id}] Empty, skip.")
                 return
 
+            # Nếu có SQL conditions, apply SQL trên batch data
             if sql.output.sql_conditions and sql.output.sql_conditions.strip():
                 batch_df.createOrReplaceTempView(temp_view)
                 result = self.spark.sql(sql.output.sql_conditions)
+                logger.info(f"[batch={batch_id}] Applied SQL conditions")
             else:
                 result = batch_df
 
             count = result.count()
             logger.info(f"[batch={batch_id}] {count} rows")
+
+            # Display dữ liệu đã parse
+            logger.info(f"[batch={batch_id}] Parsed data from Kafka:")
             result.show(truncate=False, n=20)
 
+        # Start streaming query
         query = (
             processed_df.writeStream
             .foreachBatch(_process_batch)
@@ -43,7 +61,15 @@ class SparkStreamConsole(BaseSparkKafkaStream):
             .start()
         )
 
-        logger.info(f"Console streaming started: id={query.id}")
+        logger.info(
+            f"✅ Console streaming started\n"
+            f"  - Job: {sql.job.name}\n"
+            f"  - Topic: {sql.kafka.topics_in}\n"
+            f"  - Query ID: {query.id}\n"
+            f"  - Checkpoint: {checkpoint}"
+        )
+
+        # Wait for termination
         query.awaitTermination()
 
 
